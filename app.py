@@ -1,10 +1,16 @@
 import streamlit as st
+import pickle
 import numpy as np
-from joblib import load
 
 # 1. Modelni yuklash
-model_path = 'lung_cancer_prediction_model.joblib'  # Modelning to'liq manzili
-model = load(model_path)
+model_path = 'lung_cancer_prediction_model.pkl'
+
+# Load the trained model
+with open(model_path, 'rb') as f:
+    model = pickle.load(f)
+
+# Model turini tekshirish
+st.write('Loaded model type:', type(model))
 
 # 2. Kiruvchi ma'lumotlar uchun formani yaratish
 st.title('Lung Cancer Prediction')
@@ -50,12 +56,8 @@ st.write('Input data shape:', input_data.shape)
 if st.button('Predict'):
     st.write('Input data:', input_data)  # Modelga kirayotgan ma'lumotni ko'rsatish
     try:
-        # Modelni ishlatish
         prediction = model.predict(input_data)
-
-        # Bashoratni foydalanuvchiga ko'rsatish
         st.write('Prediction:', prediction)
-        
         if prediction[0] == 1:
             st.warning('High risk of lung cancer.')
         else:
