@@ -1,21 +1,15 @@
 import streamlit as st
-import pickle
 import numpy as np
+from joblib import load
 
 # 1. Modelni yuklash
-model_path = 'lung_cancer_prediction_model.pkl'
-
-# Load the trained model
-with open(model_path, 'rb') as f:
-    model = pickle.load(f)
-
-# Model turini tekshirish
-st.write('Loaded model type:', type(model))
+model_path = 'lung_cancer_prediction_model.joblib'  # Yoki lung_cancer_prediction_model.pkl, agar pickle'dan foydalansangiz
+model = load(model_path)
 
 # 2. Kiruvchi ma'lumotlar uchun formani yaratish
 st.title('Lung Cancer Prediction')
 
-# Kiruvchi ma'lumotlarni to'plash
+# Kiruvchi ma'lumotlarni to'plash (foydalanuvchi kiritishi mumkin bo'lgan ma'lumotlar)
 age = st.number_input('Age', min_value=0, max_value=100, value=50)
 smoking = st.selectbox('Smoking', ['Yes', 'No'])
 yellow_fingers = st.selectbox('Yellow Fingers', ['Yes', 'No'])
@@ -31,7 +25,7 @@ shortness_of_breath = st.selectbox('Shortness of Breath', ['Yes', 'No'])
 swallowing_difficulty = st.selectbox('Swallowing Difficulty', ['Yes', 'No'])
 chest_pain = st.selectbox('Chest Pain', ['Yes', 'No'])
 
-# 3. Ma'lumotlarni modelga kiritish uchun raqamli formatga o'tkazish
+# 3. Ma'lumotlarni raqamli formatga o'tkazish
 input_data = np.array([
     age,
     1 if smoking == 'Yes' else 0,
@@ -49,14 +43,14 @@ input_data = np.array([
     1 if chest_pain == 'Yes' else 0
 ]).reshape(1, -1)
 
-# Ma'lumotlarni ko'rsatish (formatini va o'lchamini tekshirish)
+# Ma'lumotlarni modelga kirayotgan ma'lumot sifatida ko'rsatish
 st.write('Input data shape:', input_data.shape)
 
 # 4. Bashorat qilish
 if st.button('Predict'):
     st.write('Input data:', input_data)  # Modelga kirayotgan ma'lumotni ko'rsatish
     try:
-        prediction = model.predict(input_data)
+        prediction = model.predict(input_data)  # Model orqali bashorat qilish
         st.write('Prediction:', prediction)
         if prediction[0] == 1:
             st.warning('High risk of lung cancer.')
