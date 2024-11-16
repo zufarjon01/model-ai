@@ -1,53 +1,71 @@
 import streamlit as st
 import joblib
+import pandas as pd
 import numpy as np
 
-# Function to load the model with error handling
-def load_model(model_path):
-    try:
-        # Try loading the model with joblib
-        model = joblib.load(model_path)
-        return model
-    except Exception as e:
-        st.error(f"Error loading model: {e}")
-        return None
+# Load the trained model
+try:
+    model = joblib.load('lung_cancer_prediction_model.pkl')
+except Exception as e:
+    st.error(f"Error loading model: {e}")
 
-# Load the pre-trained model (ensure the correct file path)
-model = load_model('lung_cancer_prediction_model.pkl')
-
-if model:
-    st.success("Model loaded successfully!")
-else:
-    st.warning("Model failed to load. Please check the file.")
-
-# Streamlit interface for user input
+# Streamlit title
 st.title("Lung Cancer Prediction")
 
-# Collect input features from the user
-age = st.number_input("Age", min_value=0, max_value=100, value=50)
-smoking = st.radio("Do you smoke?", ("Yes", "No"))
-smoking = 1 if smoking == "Yes" else 0  # Encoding 'Yes' as 1 and 'No' as 0
+# Input form for patient data
+with st.form(key='input_form'):
+    age = st.number_input("Age", min_value=1, max_value=120, step=1)
+    gender = st.selectbox("Gender", options=["Male", "Female"])
+    smoking = st.selectbox("Smoking Status", options=["Yes", "No"])
+    yellow_fingers = st.selectbox("Yellow Fingers", options=["Yes", "No"])
+    anxiety = st.selectbox("Anxiety", options=["Yes", "No"])
+    peer_pressure = st.selectbox("Peer Pressure", options=["Yes", "No"])
+    chronic_disease = st.selectbox("Chronic Disease", options=["Yes", "No"])
+    fatigue = st.selectbox("Fatigue", options=["Yes", "No"])
+    allergy = st.selectbox("Allergy", options=["Yes", "No"])
+    wheezing = st.selectbox("Wheezing", options=["Yes", "No"])
+    alcohol_consuming = st.selectbox("Alcohol Consuming", options=["Yes", "No"])
+    cough = st.selectbox("Cough", options=["Yes", "No"])
+    shortness_of_breath = st.selectbox("Shortness of Breath", options=["Yes", "No"])
+    swallowing_difficulty = st.selectbox("Swallowing Difficulty", options=["Yes", "No"])
+    chest_pain = st.selectbox("Chest Pain", options=["Yes", "No"])
 
-# Additional input fields, assuming these are relevant to your model
-cough = st.radio("Do you have a persistent cough?", ("Yes", "No"))
-cough = 1 if cough == "Yes" else 0
+    submit_button = st.form_submit_button(label="Submit")
+    
+    if submit_button:
+        # Prepare input data for prediction
+        input_data = {
+            "Age": age,
+            "Gender": 1 if gender == "Male" else 0,  # Male=1, Female=0
+            "Smoking": 1 if smoking == "Yes" else 0,
+            "Yellow Fingers": 1 if yellow_fingers == "Yes" else 0,
+            "Anxiety": 1 if anxiety == "Yes" else 0,
+            "Peer Pressure": 1 if peer_pressure == "Yes" else 0,
+            "Chronic Disease": 1 if chronic_disease == "Yes" else 0,
+            "Fatigue": 1 if fatigue == "Yes" else 0,
+            "Allergy": 1 if allergy == "Yes" else 0,
+            "Wheezing": 1 if wheezing == "Yes" else 0,
+            "Alcohol Consuming": 1 if alcohol_consuming == "Yes" else 0,
+            "Cough": 1 if cough == "Yes" else 0,
+            "Shortness of Breath": 1 if shortness_of_breath == "Yes" else 0,
+            "Swallowing Difficulty": 1 if swallowing_difficulty == "Yes" else 0,
+            "Chest Pain": 1 if chest_pain == "Yes" else 0
+        }
 
-chest_pain = st.radio("Do you experience chest pain?", ("Yes", "No"))
-chest_pain = 1 if chest_pain == "Yes" else 0
+        # Convert input to DataFrame for prediction
+        input_df = pd.DataFrame([input_data])
 
-# Define any other necessary inputs here (e.g., breathlessness, weight loss, etc.)
+        # Make prediction using the model
+        try:
+            prediction = model.predict(input_df)
+            prediction_prob = model.predict_proba(input_df)[:, 1]  # Probability of class 1
 
-# Prediction button
-if st.button("Predict"):
-    if model:
-        # Example input array, replace with actual model input features
-        features = np.array([[age, smoking, cough, chest_pain]])  # Add other features as needed
-        prediction = model.predict(features)
-
-        # Display the result
-        if prediction[0] == 1:
-            st.write("Prediction: High likelihood of lung cancer.")
-        else:
-            st.write("Prediction: Low likelihood of lung cancer.")
-    else:
-        st.error("Model not available for prediction.")
+            # Display the results
+            if prediction[0] == 1:
+                st.subheader("Prediction: Positive for Lung Cancer")
+                st.write(f"Probability: {prediction_prob[0]:.2f}")
+            else:
+                st.subheader("Prediction: Negative for Lung Cancer")
+                st.write(f"Probability: {1 - prediction_prob[0]:.2f}")
+        except Exception as e:
+            st.error(f"Error making prediction: {e}")
