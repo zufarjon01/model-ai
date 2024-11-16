@@ -48,10 +48,14 @@ input_data = np.array([
 
 # 4. Bashorat qilish
 if st.button('Predict'):
-    prediction = model.predict(input_data)
-    
-    if prediction[0] == 1:
-        st.warning('High risk of lung cancer.')
-    else:
-        st.success('Low risk of lung cancer.')
+    st.write('Input data:', input_data)  # Modelga kirayotgan ma'lumotni ko'rsatish
+    try:
+        prediction = model.predict(input_data)
+        if prediction[0] == 1:
+            st.warning('High risk of lung cancer.')
+        else:
+            st.success('Low risk of lung cancer.')
+    except Exception as e:
+        st.error(f'Error occurred during prediction: {e}')
+
 
