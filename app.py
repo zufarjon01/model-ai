@@ -9,9 +9,6 @@ model_path = 'lung_cancer_prediction_model.pkl'
 with open(model_path, 'rb') as f:
     model = pickle.load(f)
 
-# Model turini tekshirish
-st.write('Loaded model type:', type(model))
-
 # 2. Kiruvchi ma'lumotlar uchun formani yaratish
 st.title('Lung Cancer Prediction')
 
@@ -49,18 +46,12 @@ input_data = np.array([
     1 if chest_pain == 'Yes' else 0
 ]).reshape(1, -1)
 
-# Ma'lumotlarni ko'rsatish (formatini va o'lchamini tekshirish)
-st.write('Input data shape:', input_data.shape)
-
 # 4. Bashorat qilish
 if st.button('Predict'):
-    st.write('Input data:', input_data)  # Modelga kirayotgan ma'lumotni ko'rsatish
-    try:
-        prediction = model.predict(input_data)
-        st.write('Prediction:', prediction)
-        if prediction[0] == 1:
-            st.warning('High risk of lung cancer.')
-        else:
-            st.success('Low risk of lung cancer.')
-    except Exception as e:
-        st.error(f'Error occurred during prediction: {e}')
+    prediction = model.predict(input_data)
+    
+    if prediction[0] == 1:
+        st.warning('High risk of lung cancer.')
+    else:
+        st.success('Low risk of lung cancer.')
+
