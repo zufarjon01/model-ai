@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lung Cancer Prediction</title>
+</head>
+<body>
+    <h1>Lung Cancer Prediction</h1>
+    <form method="POST" action="/predict">
+        <label for="gender">Gender (0: Female, 1: Male):</label>
+        <input type="number" id="gender" name="gender" required><br><br>
+
+        <label for="age">Age:</label>
+        <input type="number" id="age" name="age" required><br><br>
+
+        <label for="smoking">Smoking (0: No, 1: Yes):</label>
+        <input type="number" id="smoking" name="smoking" required><br><br>
+
+        <!-- Qo'shimcha maydonlarni kiriting -->
+        <label for="yellow_fingers">Yellow Fingers (0: No, 1: Yes):</label>
+        <input type="number" id="yellow_fingers" name="yellow_fingers" required><br><br>
+
+        <label for="anxiety">Anxiety (0: No, 1: Yes):</label>
+        <input type="number" id="anxiety" name="anxiety" required><br><br>
+
+        <!-- Hamma kerakli maydonlarni formga qo'shing -->
+
+        <input type="submit" value="Predict">
+    </form>
+    <h2>{{ prediction }}</h2>
+</body>
+</html>
