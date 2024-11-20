@@ -1,57 +1,54 @@
-import streamlit as st
-import pickle
+from flask import Flask, render_template, request
+import joblib
 import numpy as np
 
-# 1. Modelni yuklash
-model_path = 'lung_cancer_prediction_model.pkl'
+app = Flask(__name__)
 
-# Load the trained model
-with open(model_path, 'rb') as f:
-    model = pickle.load(f)
+# Modelni yuklash
+MODEL_PATH = 'lung_cancer_prediction_model.pkl'
+try:
+    model = joblib.load(MODEL_PATH)
+except Exception as e:
+    model = None
+    print(f"Modelni yuklashda xatolik: {e}")
 
-# 2. Kiruvchi ma'lumotlar uchun formani yaratish
-st.title('Lung Cancer Prediction')
+@app.route('/')
+def index():
+    return render_template('index.html')  # HTML faylni "templates" papkasiga joylashtiring
 
-# Kiruvchi ma'lumotlarni to'plash
-age = st.number_input('Age', min_value=0, max_value=100, value=50)
-smoking = st.selectbox('Smoking', ['Yes', 'No'])
-yellow_fingers = st.selectbox('Yellow Fingers', ['Yes', 'No'])
-anxiety = st.selectbox('Anxiety', ['Yes', 'No'])
-peer_pressure = st.selectbox('Peer Pressure', ['Yes', 'No'])
-chronic_disease = st.selectbox('Chronic Disease', ['Yes', 'No'])
-fatigue = st.selectbox('Fatigue', ['Yes', 'No'])
-allergy = st.selectbox('Allergy', ['Yes', 'No'])
-wheezing = st.selectbox('Wheezing', ['Yes', 'No'])
-alcohol_consumption = st.selectbox('Alcohol Consumption', ['Yes', 'No'])
-coughing = st.selectbox('Coughing', ['Yes', 'No'])
-shortness_of_breath = st.selectbox('Shortness of Breath', ['Yes', 'No'])
-swallowing_difficulty = st.selectbox('Swallowing Difficulty', ['Yes', 'No'])
-chest_pain = st.selectbox('Chest Pain', ['Yes', 'No'])
+@app.route('/predict', methods=['POST'])
+def predict():
+    try:
+        # Form ma'lumotlarini olish
+        gender = int(request.form['gender'])
+        age = int(request.form['age'])
+        smoking = int(request.form['smoking'])
+        yellow_fingers = int(request.form['yellow_fingers'])
+        anxiety = int(request.form['anxiety'])
+        peer_pressure = int(request.form['peer_pressure'])
+        chronic_disease = int(request.form['chronic_disease'])
+        fatigue = int(request.form['fatigue'])
+        allergy = int(request.form['allergy'])
+        wheezing = int(request.form['wheezing'])
+        alcohol_consuming = int(request.form['alcohol_consuming'])
+        coughing = int(request.form['coughing'])
+        shortness_of_breath = int(request.form['shortness_of_breath'])
+        swallowing_difficulty = int(request.form['swallowing_difficulty'])
+        chest_pain = int(request.form['chest_pain'])
 
-# 3. Ma'lumotlarni modelga kiritish uchun raqamli formatga o'tkazish
-input_data = np.array([
-    age,
-    1 if smoking == 'Yes' else 0,
-    1 if yellow_fingers == 'Yes' else 0,
-    1 if anxiety == 'Yes' else 0,
-    1 if peer_pressure == 'Yes' else 0,
-    1 if chronic_disease == 'Yes' else 0,
-    1 if fatigue == 'Yes' else 0,
-    1 if allergy == 'Yes' else 0,
-    1 if wheezing == 'Yes' else 0,
-    1 if alcohol_consumption == 'Yes' else 0,
-    1 if coughing == 'Yes' else 0,
-    1 if shortness_of_breath == 'Yes' else 0,
-    1 if swallowing_difficulty == 'Yes' else 0,
-    1 if chest_pain == 'Yes' else 0
-]).reshape(1, -1)
+        # Modelga kiritish uchun ma'lumotlarni tayyorlash
+        features = np.array([[gender, age, smoking, yellow_fingers, anxiety, peer_pressure,
+                              chronic_disease, fatigue, allergy, wheezing, alcohol_consuming,
+                              coughing, shortness_of_breath, swallowing_difficulty, chest_pain]])
+        
+        # Bashorat qilish
+        prediction = model.predict(features)
+        result = 'Lung Cancer Detected' if prediction[0] == 1 else 'No Lung Cancer Detected'
 
-# 4. Bashorat qilish
-if st.button('Predict'):
-    prediction = model.predict(input_data)
-    
-    if prediction[0] == 1:
-        st.warning('High risk of lung cancer.')
-    else:
-        st.success('Low risk of lung cancer.')
+    except Exception as e:
+        result = f"Xatolik yuz berdi: {e}"
 
+    return render_template('index.html', prediction=result)
+
+if __name__ == '__main__':
+    app.run(debug=True)
