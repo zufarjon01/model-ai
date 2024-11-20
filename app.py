@@ -10,11 +10,11 @@ try:
     model = joblib.load(MODEL_PATH)
 except Exception as e:
     model = None
-    print(f"Modelni yuklashda xatolik: {e}")
+    model_error = f"Modelni yuklashda xatolik: {e}"
 
 @app.route('/')
 def index():
-    return render_template('index.html')  # HTML faylni "templates" papkasiga joylashtiring
+    return render_template('index.html', model_error=model_error if model is None else None)
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -42,8 +42,11 @@ def predict():
                               coughing, shortness_of_breath, swallowing_difficulty, chest_pain]])
         
         # Bashorat qilish
-        prediction = model.predict(features)
-        result = 'Lung Cancer Detected' if prediction[0] == 1 else 'No Lung Cancer Detected'
+        if model is None:
+            result = "Modelni yuklashda xatolik yuz berdi. Iltimos, tizim administratoriga murojaat qiling."
+        else:
+            prediction = model.predict(features)
+            result = 'Lung Cancer Detected' if prediction[0] == 1 else 'No Lung Cancer Detected'
 
     except Exception as e:
         result = f"Xatolik yuz berdi: {e}"
